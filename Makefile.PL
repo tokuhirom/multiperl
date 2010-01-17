@@ -6,6 +6,8 @@ requires 'UNIVERSAL::require';
 requires 'Path::Class';
 requires 'Scope::Guard';
 
+install_script 'multiperl';
+
 tests 't/*.t t/*/*.t t/*/*/*.t t/*/*/*/*.t';
 test_requires 'Test::More';
 test_requires 'YAML';
