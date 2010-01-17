@@ -2,7 +2,9 @@ use inc::Module::Install;
 name 'App-MultiPerl';
 all_from 'lib/App/MultiPerl.pm';
 
-# requires '';
+requires 'UNIVERSAL::require';
+requires 'Path::Class';
+requires 'Scope::Guard';
 
 tests 't/*.t t/*/*.t t/*/*/*.t t/*/*/*/*.t';
 test_requires 'Test::More';
