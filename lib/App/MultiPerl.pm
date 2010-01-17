@@ -7,7 +7,7 @@ use App::MultiPerl::Repository;
 use Pod::Usage qw/pod2usage/;
 use File::Basename;
 
-sub repo () { 'App::MultiPerl::Repository' }
+sub repo () { 'App::MultiPerl::Repository' } ## no critic
 
 sub run {
     my $class = shift;

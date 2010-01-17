@@ -1,12 +1,19 @@
 package App::MultiPerl::Repository;
 use strict;
 use warnings;
-use App::MultiPerl::Util qw/shell/;
 use Path::Class qw/dir/;
 use File::Path qw/mkpath/;
 use Scope::Guard;
 use Cwd ();
 use File::Basename qw/basename/;
+
+sub shell {
+    print "-- @_\n";
+    my $ret = system(@_);
+    if ($ret != 0) {
+        die "Failed to execute '@_': $ret";
+    }
+}
 
 sub prefix {
     my $class = shift;
