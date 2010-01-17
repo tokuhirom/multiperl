@@ -1,0 +1,40 @@
+#!/usr/local/bin/perl
+use strict;
+use warnings;
+use FindBin;
+use File::Spec;
+use lib File::Spec->catfile($FindBin::Bin, 'lib');
+use App::MultiPerl;
+
+App::MultiPerl->run();
+
+__END__
+
+=head1 NAME
+
+multiperl - multiple vresion of perl manager
+
+=head1 SYNOPSIS
+
+    % multiperl run hoge.pl
+    % multiperl run -e hoge.pl
+    % multiperl run --target=5.10.0 -e hoge.pl
+    % multiperl -V
+    % multiperl run hoge.pl
+    % multiperl install -v 5.10.0
+    % multiperl install -v 5.10.0 -Dusethreads
+    % multiperl cpan -i Text::MicroTemplate
+    % multiperl cpan -v 5.10.0 -i Text::MicroTemplate
+    % multiperl list
+
+=head1 ENVIROMENT VARIABLES
+
+=over 4
+
+=item MULTIPERL_GIT_SOURCE
+
+default is git://perl5.git.perl.org/perl.git.
+
+=back
+
+=cut
