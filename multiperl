@@ -10,13 +10,14 @@ use LWP::UserAgent;
 use Archive::Tar;
 use File::Temp qw/tempdir/;
 use File::Spec::Functions qw/catdir/;
+use File::Spec;
 
 our $VERSION = "0.01";
 
 my ( $verbose, $debug );
-my $base = $ENV{MULTIPERL_BASE};
 my $mode = "install";
 my $home = File::HomeDir->my_home;
+my $base = $ENV{MULTIPERL_BASE} || "$home/multiperl/";
 
 &main; exit;
 
@@ -32,7 +33,6 @@ sub main {
         'help'      => \my $help,
         'debug'     => \$debug,
     );
-    die "plase set \$ENV{MULTIPERL_BASE} or use --base" unless $base;
     pod2usage() if $help;
 
     dbg "run $mode";
@@ -55,10 +55,10 @@ sub cmd_install {
     my $tarball = "perl-$version.tar.gz";
 
     my $ua = LWP::UserAgent->new(agent => "multiperl/$VERSION");
-    my $url = "http://github.com/github/perl/tarball/perl-$version";
+    my $url = get_tarball_url($version);
     print "fetching from $url\n";
     my $res = $ua->mirror($url, $tarball);
-    $res->is_success or die "Cannot fetch $url: " . $res->staus_line;
+    $res->is_success or die "Cannot fetch $url: " . $res->status_line;
 
     print "extract $tarball\n";
     my $tar = Archive::Tar->new();
@@ -73,6 +73,18 @@ sub cmd_install {
     run_cmd("./Configure -des -Dusedevel -Dprefix=$prefix @args");
     run_cmd("make");
     run_cmd("make install");
+
+    chdir(File::Spec->rootdir); # for cleanup tempdir.
+}
+
+sub get_tarball_url {
+    my $version = shift;
+    my %patched = map { $_ => 1 } qw/5.8.1 5.6.2/;
+    if ($patched{$version}) {
+        "http://github.com/tokuhirom/perl/tarball/perl-$version-patched";
+    } else {
+        "http://github.com/github/perl/tarball/perl-$version";
+    }
 }
 
 sub cmd_list {
@@ -92,21 +104,29 @@ __END__
 
 =head1 NAME
 
-multiperl - multiple vresion of perl manager
+multiperl - perl installer for developers
 
 =head1 SYNOPSIS
 
     % multiperl 5.10.0
     % multiperl 5.10.0 -Dusethreads
 
+=head1 DESCRIPTION
+
+multiperl is a command line tool which allos us to easily install the multiple version of perl interpreter.
+
 =head1 ENVIROMENT VARIABLES
 
 =over 4
 
-=item MULTIPERL_GIT_SOURCE
+=item MULTIPERL_BASE
 
-default is git://perl5.git.perl.org/perl.git.
+default installation path for multiperl.
 
 =back
+
+=head1 SEE ALSO
+
+L<App::perlbrew> is similar.
 
 =cut
