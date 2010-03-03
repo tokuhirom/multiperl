@@ -1,12 +1,92 @@
 #!/usr/local/bin/perl
 use strict;
 use warnings;
-use FindBin;
-use File::Spec;
-use lib File::Spec->catfile($FindBin::Bin, 'lib');
-use App::MultiPerl;
+use Getopt::Long;
+use File::HomeDir 0.65;
+use File::Basename qw/basename/;
+use Path::Class qw/file dir/;
+use Pod::Usage;
+use LWP::UserAgent;
+use Archive::Tar;
+use File::Temp qw/tempdir/;
+use File::Spec::Functions qw/catdir/;
 
-App::MultiPerl->run();
+our $VERSION = "0.01";
+
+my ( $verbose, $debug );
+my $base = $ENV{MULTIPERL_BASE};
+my $mode = "install";
+my $home = File::HomeDir->my_home;
+
+&main; exit;
+
+sub dbg {
+    print "@_\n" if $verbose;
+}
+
+sub main {
+    GetOptions(
+        'list'      => sub { $mode = "list" },
+        'v|verbose' => \$verbose,
+        'base'      => \$base,
+        'help'      => \my $help,
+        'debug'     => \$debug,
+    );
+    die "plase set \$ENV{MULTIPERL_BASE} or use --base" unless $base;
+    pod2usage() if $help;
+
+    dbg "run $mode";
+    __PACKAGE__->can("cmd_$mode")->();
+}
+
+sub cmd_install {
+    my ($version, @args) = @ARGV;
+    pod2usage() unless $version;
+
+    my $id = join( "-",
+        $version,
+        map { my $x = $_; $x =~ s/^-[a-zA-Z]//; $x }
+          sort( { $a cmp $b } @args ) );
+    $id =~ s/=/_/g;    # for -DDEBUGGING=-g
+
+    my $build_dir = tempdir(UNLINK => $debug ? 0 : 1);
+    dbg "build_dir is '$build_dir'";
+    chdir $build_dir;
+    my $tarball = "perl-$version.tar.gz";
+
+    my $ua = LWP::UserAgent->new(agent => "multiperl/$VERSION");
+    my $url = "http://github.com/github/perl/tarball/perl-$version";
+    print "fetching from $url\n";
+    my $res = $ua->mirror($url, $tarball);
+    $res->is_success or die "Cannot fetch $url: " . $res->staus_line;
+
+    print "extract $tarball\n";
+    my $tar = Archive::Tar->new();
+    $tar->read($tarball);
+    $tar->extract();
+
+    my ($newdir) = grep { -d $_ } dir('.')->children;
+    chdir $newdir;
+
+    print "ready to build\n";
+    my $prefix = catdir($base, $id);
+    run_cmd("./Configure -des -Dusedevel -Dprefix=$prefix @args");
+    run_cmd("make");
+    run_cmd("make install");
+}
+
+sub cmd_list {
+    print join"\n", map { basename($_) } dir($base)->children;
+    print "\n";
+}
+
+sub run_cmd {
+    print "-- @_\n" if $verbose;
+    my $ret = system(@_);
+    if ( $ret != 0 ) {
+        die "Failed to execute '@_': $ret";
+    }
+}
 
 __END__
 
@@ -16,16 +96,8 @@ multiperl - multiple vresion of perl manager
 
 =head1 SYNOPSIS
 
-    % multiperl run hoge.pl
-    % multiperl run -e hoge.pl
-    % multiperl run --target=5.10.0 -e hoge.pl
-    % multiperl -V
-    % multiperl run hoge.pl
-    % multiperl install -v 5.10.0
-    % multiperl install -v 5.10.0 -Dusethreads
-    % multiperl cpan -i Text::MicroTemplate
-    % multiperl cpan -v 5.10.0 -i Text::MicroTemplate
-    % multiperl list
+    % multiperl 5.10.0
+    % multiperl 5.10.0 -Dusethreads
 
 =head1 ENVIROMENT VARIABLES
 

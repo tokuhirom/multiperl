@@ -1,10 +1,11 @@
 use inc::Module::Install;
 name 'App-MultiPerl';
-all_from 'lib/App/MultiPerl.pm';
+all_from 'multiperl';
 
-requires 'UNIVERSAL::require';
 requires 'Path::Class';
-requires 'Scope::Guard';
+requires 'LWP::UserAgent';
+requires 'File::HomeDir';
+requires 'Archive::Tar';
 
 install_script 'multiperl';
 
