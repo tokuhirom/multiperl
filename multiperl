@@ -49,7 +49,7 @@ sub cmd_install {
           sort( { $a cmp $b } @args ) );
     $id =~ s/=/_/g;    # for -DDEBUGGING=-g
 
-    my $build_dir = tempdir(UNLINK => $debug ? 0 : 1);
+    my $build_dir = tempdir(CLEANUP => $debug ? 0 : 1);
     dbg "build_dir is '$build_dir'";
     chdir $build_dir;
     my $tarball = "perl-$version.tar.gz";
