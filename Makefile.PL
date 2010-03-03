@@ -9,6 +9,8 @@ requires 'Archive::Tar';
 
 install_script 'multiperl';
 
+readme_markdown_from 'multiperl';
+
 tests 't/*.t t/*/*.t t/*/*/*.t t/*/*/*/*.t';
 test_requires 'Test::More';
 test_requires 'YAML';

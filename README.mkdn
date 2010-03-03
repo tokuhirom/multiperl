@@ -1,0 +1,22 @@
+# NAME
+
+multiperl - perl installer for developers
+
+# SYNOPSIS
+
+    % multiperl 5.10.0
+    % multiperl 5.10.0 -Dusethreads
+
+# DESCRIPTION
+
+multiperl is a command line tool which allos us to easily install the multiple version of perl interpreter.
+
+# ENVIROMENT VARIABLES
+
+- MULTIPERL_BASE
+
+default installation path for multiperl.
+
+# SEE ALSO
+
+[App::perlbrew](http://search.cpan.org/search?mode=module&query=App::perlbrew) is similar.
